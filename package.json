@@ -1,0 +1,24 @@
+{
+  "name": "download-npm",
+  "version": "0.0.1",
+  "description": "Download the modules from the NPM registry to HTML5 file system API Edit",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jlobo/download-npm.git"
+  },
+  "keywords": [
+    "html5",
+    "browser",
+    "fs",
+    "file",
+    "system",
+    "FileSystem"
+  ],
+  "author": "José Lobo <jloboprs@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jlobo/download-npm/issues"
+  },
+  "homepage": "https://github.com/jlobo/download-npm#readme"
+}
