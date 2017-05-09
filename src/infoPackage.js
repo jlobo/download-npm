@@ -20,7 +20,7 @@ export default class InfoPackage {
       valid: valid.validForOldPackages,
       name: name,
       scope: scope ? scope : null,
-      version: version ? version : 'last',
+      version: version ? version : 'latest',
       escapedName: querystring.escape(name),
     }
   }
