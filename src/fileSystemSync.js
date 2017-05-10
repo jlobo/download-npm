@@ -1,7 +1,9 @@
+import window from './global/window'
+import FileReader from './global/fileReader'
 import FileWriterSync from './fileWriterSync'
 
 export default class FileSystemSync {
-  constructor(type = window.TEMPORARY, size = 12 * Math.pow(1024, 2)) {
+  constructor(type = window.TEMPORARY, size = Math.pow(1024, 3)) {
     this.type = type
     this.size = size
   }
@@ -32,12 +34,12 @@ export default class FileSystemSync {
 
   async getFileReader(path) {
     const entry = await this.getFileEntry(path, {create: false})
-    return new Promise(resolve => {
+    return new Promise((resolve, reject) => {
       entry.file(file => {
         const reader = new FileReader()
         reader.onloadend = () => resolve(reader)
         reader.readAsText(file)
-      })
+      }, reject)
     })
   }
 
