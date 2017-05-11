@@ -3,6 +3,7 @@ import Stream from 'stream'
 import tar from 'tar-stream'
 import fs from 'fs'
 
+// Add the description "stream" in the name
 export default class TarEs6 extends Stream.Writable {
   constructor(directory = '/', options) {
     super(options)
@@ -43,7 +44,8 @@ export default class TarEs6 extends Stream.Writable {
     if (!isFile)
       return callback()
 
-    stream.pipe(this.fs.createWriteStream(header.name)).on('finish', callback)
+    const fullPath = path.join(this.directory, header.name)
+    stream.pipe(this.fs.createWriteStream(fullPath)).on('finish', callback)
   }
 
   _createDirectories(entry, isFile) {
