@@ -4,7 +4,7 @@ const got = td.replace('got')
 const PackageInfo = require('../src/packageInfo').default
 const any = td.matchers.anything()
 
-test('InfoPackage.get() should validate the package name', assert => {
+test('InfoPackage should validate the the package name', assert => {
   assert.deepEqual((new PackageInfo()).isValid, false)
   assert.deepEqual((new PackageInfo(':weirdchars')).isValid, false)
   assert.deepEqual((new PackageInfo(' space')).isValid, false)
@@ -13,7 +13,7 @@ test('InfoPackage.get() should validate the package name', assert => {
   assert.end()
 })
 
-test('InfoPackage.get() should obtain name', assert => {
+test('InfoPackage should initalice the name correctly', assert => {
   const info = new PackageInfo('package-name')
   assert.deepEqual(info.isValid, true)
   assert.deepEqual(info.name, 'package-name')
@@ -23,7 +23,7 @@ test('InfoPackage.get() should obtain name', assert => {
   assert.end()
 })
 
-test('InfoPackage.get() should obtain name and scope', assert => {
+test('InfoPackage should initalice the name and scope correctly', assert => {
   const info = new PackageInfo('@npm/package-name')
   assert.deepEqual(info.isValid, true)
   assert.deepEqual(info.name, '@npm/package-name')
@@ -33,7 +33,7 @@ test('InfoPackage.get() should obtain name and scope', assert => {
   assert.end()
 })
 
-test('InfoPackage.get() should obtain name, scope and tag', assert => {
+test('InfoPackage should initalice the name, scope and tag correctly', assert => {
   const info = new PackageInfo('@npm/package-name@current')
   assert.deepEqual(info.isValid, true)
   assert.deepEqual(info.name, '@npm/package-name')
@@ -43,7 +43,7 @@ test('InfoPackage.get() should obtain name, scope and tag', assert => {
   assert.end()
 })
 
-test('InfoPackage.get() should obtain name, scope and version', assert => {
+test('InfoPackage should initalice the name, scope and version correctly', assert => {
   const info = new PackageInfo('@npm/package-name@0.0.1')
   assert.deepEqual(info.isValid, true)
   assert.deepEqual(info.name, '@npm/package-name')
@@ -53,7 +53,7 @@ test('InfoPackage.get() should obtain name, scope and version', assert => {
   assert.end()
 })
 
-test('InfoPackage.get() should obtain name and tag', assert => {
+test('InfoPackage should initalice the name and tag correctly', assert => {
   const info = new PackageInfo('package-name@latest')
   assert.deepEqual(info.isValid, true)
   assert.deepEqual(info.name, 'package-name')
@@ -63,7 +63,7 @@ test('InfoPackage.get() should obtain name and tag', assert => {
   assert.end()
 })
 
-test('InfoPackage.get() should obtain name and version', assert => {
+test('InfoPackage should initalice the name and version correctly', assert => {
   const info = new PackageInfo('package-name@0.0.1')
   assert.deepEqual(info.isValid, true)
   assert.deepEqual(info.name, 'package-name')
@@ -82,7 +82,7 @@ test('InfoPackage.urlPackage() should obtain the url', assert => {
 
 test('InfoPackage.getInfo() should obtain the json from the registry', async assert => {
   const res = { body: {
-    'dist-tags': { main: '1.1.0' },
+    'dist-tags': { latest: '1.1.0' },
     versions: {
       '1.0.0': { dist: { tarball: 'https://npmjs.org' } },
       '1.1.0': { dist: { tarball: 'https://npmjs.org' } },
@@ -91,18 +91,34 @@ test('InfoPackage.getInfo() should obtain the json from the registry', async ass
 
   td.when(got(any, any)).thenReturn(Promise.resolve(res))
 
-  let info = new PackageInfo('package-name@main')
+  let info = new PackageInfo('package-name@latest')
   let value = await info.getInfo()
-  assert.strictEqual(value, res.body.versions['1.1.0'], 'package version exist')
+  assert.strictEqual(value, res.body.versions['1.1.0'])
 
   info = new PackageInfo('package-name@1.0.0')
   value = await info.getInfo()
-  assert.strictEqual(value, res.body.versions['1.0.0'], 'package version exist')
+  assert.strictEqual(value, res.body.versions['1.0.0'])
 
-  info = new PackageInfo('package-name@2.0.0')
+  td.reset()
+  assert.end()
+})
+
+test('InfoPackage.getInfo() should throw an error', async assert => {
+  const res = { body: { 'dist-tags': { latest: '1.1.0' }, versions: {} } }
+
+  let info = new PackageInfo()
+  await info.getInfo().then(assert.fail, assert.pass)
+
+  info = new PackageInfo('package-name@1.0.0')
+  td.when(got(info.urlPackage, any)).thenReturn(Promise.resolve(res))
+  await info.getInfo().then(assert.fail, assert.pass)
+
+  info = new PackageInfo('package-name@main')
+  td.when(got(info.urlPackage, any)).thenReturn(Promise.resolve(res))
   await info.getInfo().then(assert.fail, assert.pass)
 
   info = new PackageInfo('package-name')
+  td.when(got(info.urlPackage, any)).thenReturn(Promise.reject())
   await info.getInfo().then(assert.fail, assert.pass)
 
   td.reset()
@@ -128,5 +144,30 @@ test('InfoPackage.getStream() should obtain the package stream from the registry
 
   td.reset()
   assert.strictEqual(value, stream)
+  assert.end()
+})
+
+test('InfoPackage.getError() should obtain the correct error', async assert => {
+  const info = new PackageInfo()
+
+  await info.getError().catch(err => assert.deepEqual(err.message, 'Unexpected error'))
+
+  await info.getError({}).catch(err => assert.deepEqual(err.message, 'Unexpected error'))
+
+  await info.getError('error').catch(err => assert.deepEqual(err.message, 'error'))
+
+  const err404 = {statusCode: 404}
+  await info.getError(err404).catch(err => {
+    assert.strictEqual(err, err404)
+    assert.deepEqual(err.message, 'The package does not exist')
+  })
+
+  const unknownErr = {statusCode: 301}
+  await info.getError(unknownErr).catch(err => {
+    assert.strictEqual(err, unknownErr)
+    assert.deepEqual(err.message, 'Unexpected error')
+  })
+
+  td.reset()
   assert.end()
 })

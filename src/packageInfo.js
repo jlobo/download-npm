@@ -1,10 +1,8 @@
 import got from 'got'
 import semver from 'semver'
 import validate from 'validate-npm-package-name'
-
 const exp = /^((@[^@\/]+)\/)?([^@\/]+)(@([^@\/]+))?$/
 
-// Rename for PackageInfo
 export default class PackageInfo {
   constructor(info) {
     const match = exp.exec(info)
@@ -28,16 +26,33 @@ export default class PackageInfo {
     if (this._info)
       return this._info
 
-    // verify if the response is ok, if the package exits
-    const res = await got(this.urlPackage, {json: true})
+    if (!this.isValid)
+      return this.getError('Invalid package name')
+
+    const res = await got(this.urlPackage, {json: true}).catch(this.getError)
     const version = this.version ? this.version : res.body['dist-tags'][this.tag]
     this._info = res.body.versions[version]
 
-    return this._info || Promise.reject('package version does not exist')
+    return this._info || this.getError('The package version does not exist')
   }
 
   async getStream() {
     const info = await this.getInfo()
     return got.stream(info.dist.tarball)
+  }
+
+  getError(err) {
+    if (typeof err === 'string')
+      return Promise.reject({message: err})
+
+    if (!err || !err.statusCode)
+      return Promise.reject({message: 'Unexpected error'})
+
+    switch (err.statusCode) {
+      case 404: err.message = 'The package does not exist'; break
+      default: err.message = 'Unexpected error'; break
+    }
+
+    return Promise.reject(err)
   }
 }

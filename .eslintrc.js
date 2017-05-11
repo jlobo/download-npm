@@ -153,7 +153,7 @@ module.exports = {
     "eol-last": 1,
     "func-names": 1,
     "func-style": 0,
-    "indent": [1, 2],
+    "indent": [1, 2, {"SwitchCase": 1}],
     "key-spacing": [1, { "beforeColon": false, "afterColon": true }],
     "linebreak-style": 0,
     "max-nested-callbacks": [0, 3],
