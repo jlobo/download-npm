@@ -5,7 +5,7 @@ import validate from 'validate-npm-package-name'
 const exp = /^((@[^@\/]+)\/)?([^@\/]+)(@([^@\/]+))?$/
 
 // Rename for PackageInfo
-export default class InfoPackage {
+export default class PackageInfo {
   constructor(info) {
     const match = exp.exec(info)
     if (!info || !match) {
