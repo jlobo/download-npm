@@ -1,6 +1,5 @@
 import got from 'got'
 import semver from 'semver'
-import querystring from 'querystring'
 import validate from 'validate-npm-package-name'
 
 const exp = /^((@[^@\/]+)\/)?([^@\/]+)(@([^@\/]+))?$/
@@ -22,7 +21,7 @@ export default class InfoPackage {
   }
 
   get urlPackage() {
-    return `https://registry.npmjs.org/${querystring.escape(this.name)}`.toLowerCase()
+    return `https://registry.npmjs.org/${encodeURIComponent(this.name)}`.toLowerCase()
   }
 
   async getInfo() {
