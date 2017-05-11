@@ -4,7 +4,6 @@ const win = require('../src/global/window').default
 const FileWriterSync = require('../src/fileWriterSync').default
 const FileReader = td.replace('../src/global/fileReader').default
 const FileSystemSync = require('../src/fileSystemSync').default
-
 const any = td.matchers.anything()
 
 test('FileSystemSync.root() should get the principal directory', async assert => {

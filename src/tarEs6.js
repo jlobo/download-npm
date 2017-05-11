@@ -21,9 +21,7 @@ export default class TarEs6 extends Stream.Writable {
 
   ignore() { return false }
 
-  get sep() {
-    return '/'
-  }
+  get sep() { return '/' }
 
   async _validate() {
     await this.fs.existsSync(this.directory)

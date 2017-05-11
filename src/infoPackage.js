@@ -1,27 +1,44 @@
-import validate from 'validate-npm-package-name'
+import got from 'got'
+import semver from 'semver'
 import querystring from 'querystring'
+import validate from 'validate-npm-package-name'
 
+const exp = /^((@[^@\/]+)\/)?([^@\/]+)(@([^@\/]+))?$/
+
+// Rename for PackageInfo
 export default class InfoPackage {
-  constructor() {
-    this.exp = /^((@[^@\/]+)\/)?([^@\/]+)(@([^@\/]+))?$/
+  constructor(info) {
+    const match = exp.exec(info)
+    if (!info || !match) {
+      this.isValid = false
+      return this.isValid
+    }
+
+    this.scope = match[2] || null
+    this.name = this.scope ? `${this.scope}/${match[3]}` : match[3]
+    this.isValid = validate(this.name).validForOldPackages
+    this.version = semver.valid(match[5], true)
+    this.tag = !this.version ? match[5] || 'latest' : null
   }
 
-  get(name) {
-    const match = this.exp.exec(name)
-    if (!name || !match)
-      return { valid: false }
+  get urlPackage() {
+    return `https://registry.npmjs.org/${querystring.escape(this.name)}`.toLowerCase()
+  }
 
-    const version = match[5]
-    const scope = match[2]
-    name = scope ? `${scope}/${match[3]}` : match[3]
-    const valid = validate(name)
+  async getInfo() {
+    if (this._info)
+      return this._info
 
-    return {
-      valid: valid.validForOldPackages,
-      name: name,
-      scope: scope ? scope : null,
-      version: version ? version : 'latest',
-      escapedName: querystring.escape(name),
-    }
+    // verify if the response is ok, if the package exits
+    const res = await got(this.urlPackage, {json: true})
+    const version = this.version ? this.version : res.body['dist-tags'][this.tag]
+    this._info = res.body.versions[version]
+
+    return this._info || Promise.reject('package version does not exist')
+  }
+
+  async getStream() {
+    const info = await this.getInfo()
+    return got.stream(info.dist.tarball)
   }
 }
