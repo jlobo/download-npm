@@ -3,6 +3,7 @@ const td = require('testdouble')
 const got = td.replace('got')
 const PackageInfo = require('../src/packageInfo').default
 const any = td.matchers.anything()
+td.reset()
 
 test('InfoPackage should validate the the package name', assert => {
   assert.deepEqual((new PackageInfo()).isValid, false)
@@ -99,7 +100,6 @@ test('InfoPackage.getInfo() should obtain the json from the registry', async ass
   value = await info.getInfo()
   assert.strictEqual(value, res.body.versions['1.0.0'])
 
-  td.reset()
   assert.end()
 })
 
@@ -121,7 +121,6 @@ test('InfoPackage.getInfo() should throw an error', async assert => {
   td.when(got(info.urlPackage, any)).thenReturn(Promise.reject())
   await info.getInfo().then(assert.fail, assert.pass)
 
-  td.reset()
   assert.end()
 })
 
@@ -142,7 +141,6 @@ test('InfoPackage.getStream() should obtain the package stream from the registry
 
   const value = await info.getStream()
 
-  td.reset()
   assert.strictEqual(value, stream)
   assert.end()
 })
@@ -168,6 +166,5 @@ test('InfoPackage.getError() should obtain the correct error', async assert => {
     assert.deepEqual(err.message, 'Unexpected error')
   })
 
-  td.reset()
   assert.end()
 })

@@ -7,6 +7,7 @@ const packageStream = td.replace('../src/packageStream', td.constructor(Stream.T
 const DownloadNpm = require('../src/downloadNpm').default
 const any = td.matchers.anything()
 const isA = td.matchers.isA
+td.reset()
 
 test('DownloadNpm.constructor() should configure the object', assert => {
   const Unzip = td.constructor(Stream.Transform)
@@ -17,7 +18,6 @@ test('DownloadNpm.constructor() should configure the object', assert => {
   const npm = new DownloadNpm()
 
   td.verify(Unzip.prototype.on('error', isA(Function)))
-  td.reset()
   assert.strictEqual(npm._tar, null)
   assert.strictEqual(npm._unzip, unzip)
   assert.end()
@@ -38,7 +38,6 @@ test('DownloadNpm.download() should obtain the package', async assert => {
   td.verify(TarEs6.prototype.on('error', isA(Function)))
   td.verify(new TarEs6.prototype.constructor('/tmp'))
   td.verify(new packageStream.prototype.constructor('name'))
-  td.reset()
   assert.true(npm._tar instanceof TarEs6)
   assert.true(npm._tar.map instanceof Function)
   assert.end()
@@ -48,7 +47,6 @@ test('DownloadNpm._mapTar() should rename the header name', assert => {
   const header = DownloadNpm.prototype._mapTar('npm', {name: 'package/'})
 
   assert.deepEqual(header.name, 'npm/')
-  td.reset()
   assert.end()
 })
 
@@ -61,6 +59,5 @@ test('DownloadNpm._onErrorUnzip() should verify the type of error', assert => {
   DownloadNpm.prototype._onErrorUnzip.call(npm, {code: 'Z_BUF_ERROR'})
   td.verify(TarEs6.prototype.end())
 
-  td.reset()
   assert.end()
 })

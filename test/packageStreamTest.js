@@ -3,6 +3,7 @@ const test = require('tape')
 const Stream = require('stream')
 const PackageInfo = td.replace('../src/packageInfo').default
 const PackageStream = require('../src/packageStream').default
+td.reset()
 
 test('PackageStream should configure the pipe', assert => {
   const fake = new Stream.Transform()
@@ -11,7 +12,6 @@ test('PackageStream should configure the pipe', assert => {
   const stream = new PackageStream('name')
 
   stream.on('pipe', data => {
-    td.reset()
     assert.strictEqual(data, fake)
     assert.end()
   })
@@ -24,7 +24,6 @@ test('PackageStream should throw an error', assert => {
   const stream = new PackageStream('name')
 
   stream.on('error', data => {
-    td.reset()
     assert.strictEqual(data, err)
     assert.end()
   })
@@ -44,6 +43,5 @@ test('PackageStream should pass the data through the pipe', assert => {
   td.verify(next())
   td.verify(stream.push(1, 2))
 
-  td.reset()
   assert.end()
 })

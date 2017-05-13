@@ -5,6 +5,7 @@ const FileWriterSync = require('../src/fileWriterSync').default
 const FileReader = td.replace('../src/global/fileReader').default
 const FileSystemSync = require('../src/fileSystemSync').default
 const any = td.matchers.anything()
+td.reset()
 
 test('FileSystemSync.root() should get the principal directory', async assert => {
   const root = {}
@@ -20,7 +21,6 @@ test('FileSystemSync.root() should get the principal directory', async assert =>
   const fs = new FileSystemSync()
   const value = await fs.root
 
-  td.reset()
   assert.deepEqual(value, root)
   assert.end()
 })
@@ -33,7 +33,6 @@ test('FileSystemSync.root() should trigger an error', async assert => {
   const fs = new FileSystemSync()
   await fs.root.then(assert.fail, assert.pass)
 
-  td.reset()
   assert.end()
 })
 
@@ -57,7 +56,6 @@ test('FileSystemSync.getDirectoryEntry() should obtain the directory', async ass
   const fs = new FileSystemSync()
   const value = await fs.getDirectoryEntry('/home', {create})
 
-  td.reset()
   assert.deepEqual(value, directory)
   assert.end()
 })
@@ -74,7 +72,6 @@ test('FileSystemSync.getDirectoryEntry() should trigger an error', async assert 
   const fs = new FileSystemSync()
   await fs.getDirectoryEntry('/home').then(assert.fail, assert.pass)
 
-  td.reset()
   assert.end()
 })
 
@@ -97,7 +94,6 @@ test('FileSystemSync.getFileEntry() should obtain the file', async assert => {
   const fs = new FileSystemSync()
   const value = await fs.getFileEntry('/home', configEntry)
 
-  td.reset()
   assert.deepEqual(value, file)
   assert.end()
 })
@@ -114,7 +110,6 @@ test('FileSystemSync.getFileEntry() should trigger an error', async assert => {
   const fs = new FileSystemSync()
   await fs.getFileEntry('/home').then(assert.fail, assert.pass)
 
-  td.reset()
   assert.end()
 })
 
@@ -139,7 +134,6 @@ test('FileSystemSync.getFileWriter() should obtain the writer', async assert => 
   const fs = new FileSystemSync()
   const value = await fs.getFileWriter('/home')
 
-  td.reset()
   assert.true(value instanceof FileWriterSync)
   assert.equal(value.writer, writer)
   assert.deepEqual(value.path, '/home')
@@ -162,7 +156,6 @@ test('FileSystemSync.getFileWriter() should trigger an error', async assert => {
   const fs = new FileSystemSync()
   await fs.getFileWriter('/home').then(assert.fail, assert.pass)
 
-  td.reset()
   assert.end()
 })
 
@@ -195,7 +188,6 @@ test('FileSystemSync.getFileReader() should obtain the reader', async assert => 
   const fs = new FileSystemSync()
   const value = await fs.getFileReader('/home')
 
-  td.reset()
   assert.equal(value, rader)
   assert.end()
 })
@@ -216,6 +208,5 @@ test('FileSystemSync.getFileReader() should trigger an error', async assert => {
   const fs = new FileSystemSync()
   await fs.getFileReader('/home').then(assert.fail, assert.pass)
 
-  td.reset()
   assert.end()
 })
