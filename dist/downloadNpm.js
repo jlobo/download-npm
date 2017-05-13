@@ -22691,8 +22691,10 @@ ClientRequest.prototype.setHeader = function (name, value) {
 }
 
 ClientRequest.prototype.getHeader = function (name) {
-	var self = this
-	return self._headers[name.toLowerCase()].value
+	var header = this._headers[name.toLowerCase()]
+	if (header)
+		return header.value
+	return null
 }
 
 ClientRequest.prototype.removeHeader = function (name) {
@@ -23543,7 +23545,7 @@ var Extract = function (opts) {
 
     self._locked = true
 
-    if (!header.size) {
+    if (!header.size || header.type === 'directory') {
       self._parse(512, onheader)
       self.emit('entry', header, emptyStream(self, offset), onunlock)
       return
@@ -23625,6 +23627,7 @@ module.exports = Extract
 },{"./headers":369,"bl":4,"readable-stream":356,"util":380,"xtend":383}],369:[function(require,module,exports){
 (function (Buffer){
 var ZEROS = '0000000000000000000'
+var SEVENS = '7777777777777777777'
 var ZERO_OFFSET = '0'.charCodeAt(0)
 var USTAR = 'ustar\x0000'
 var MASK = parseInt('7777', 8)
@@ -23718,7 +23721,8 @@ var cksum = function (block) {
 
 var encodeOct = function (val, n) {
   val = val.toString(8)
-  return ZEROS.slice(0, n - val.length) + val + ' '
+  if (val.length > n) return SEVENS.slice(0, n) + ' '
+  else return ZEROS.slice(0, n - val.length) + val + ' '
 }
 
 /* Copied from the node-tar repo and modified to meet
@@ -23756,10 +23760,13 @@ function parse256 (buf) {
   return positive ? sum : -1 * sum
 }
 
-var decodeOct = function (val, offset) {
+var decodeOct = function (val, offset, length) {
+  val = val.slice(offset, offset + length)
+  offset = 0
+
   // If prefixed with 0x80 then parse as a base-256 integer
   if (val[offset] & 0x80) {
-    return parse256(val.slice(offset, offset + 8))
+    return parse256(val)
   } else {
     // Older versions of tar can prefix with spaces
     while (offset < val.length && val[offset] === 32) offset++
@@ -23865,17 +23872,17 @@ exports.decode = function (buf) {
   var typeflag = buf[156] === 0 ? 0 : buf[156] - ZERO_OFFSET
 
   var name = decodeStr(buf, 0, 100)
-  var mode = decodeOct(buf, 100)
-  var uid = decodeOct(buf, 108)
-  var gid = decodeOct(buf, 116)
-  var size = decodeOct(buf, 124)
-  var mtime = decodeOct(buf, 136)
+  var mode = decodeOct(buf, 100, 8)
+  var uid = decodeOct(buf, 108, 8)
+  var gid = decodeOct(buf, 116, 8)
+  var size = decodeOct(buf, 124, 12)
+  var mtime = decodeOct(buf, 136, 12)
   var type = toType(typeflag)
   var linkname = buf[157] === 0 ? null : decodeStr(buf, 157, 100)
   var uname = decodeStr(buf, 265, 32)
   var gname = decodeStr(buf, 297, 32)
-  var devmajor = decodeOct(buf, 329)
-  var devminor = decodeOct(buf, 337)
+  var devmajor = decodeOct(buf, 329, 8)
+  var devminor = decodeOct(buf, 337, 8)
 
   if (buf[345]) name = decodeStr(buf, 345, 155) + '/' + name
 
@@ -23888,7 +23895,7 @@ exports.decode = function (buf) {
   if (c === 8 * 32) return null
 
   // valid checksum
-  if (c !== decodeOct(buf, 148)) throw new Error('Invalid tar header. Maybe the tar is corrupted or it needs to be gunzipped?')
+  if (c !== decodeOct(buf, 148, 8)) throw new Error('Invalid tar header. Maybe the tar is corrupted or it needs to be gunzipped?')
 
   return {
     name: name,

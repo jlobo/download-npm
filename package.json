@@ -1,12 +1,12 @@
 {
   "name": "download-npm",
-  "version": "0.0.1",
+  "version": "1.0.0-rc1",
   "description": "Download the modules from the NPM registry to HTML5 file system API Edit",
   "main": "build/server.js",
   "scripts": {
     "start": "budo src/client.js --live",
     "build": "npm run build:client && npm run build:node",
-    "build:node": "rm -rf build && mkdir -p build && babel -w src --out-dir build",
+    "build:node": "rm -rf build && mkdir -p build && babel src --out-dir build",
     "build:client": "rm -rf dist && mkdir -p dist && browserify src/client.js -o dist/downloadNpm.js",
     "test": "tape-watch -c -r babel-polyfill -r babel-register 'test/**/*.js' -p faucet"
   },
@@ -14,7 +14,6 @@
     "babel-polyfill": "^6.23.0",
     "got": "^6.7.1",
     "semver": "^5.3.0",
-    "tape": "^4.6.3",
     "tar-stream": "^1.5.2",
     "validate-npm-package-name": "^3.0.0"
   },
@@ -29,6 +28,7 @@
     "browserify": "^14.3.0",
     "budo": "^10.0.3",
     "faucet": "0.0.1",
+    "tape": "^4.6.3",
     "tape-watch": "^2.3.0",
     "testdouble": "^2.1.2"
   },
@@ -36,11 +36,7 @@
     "fs": "./src/fsEs6"
   },
   "browserify": {
-    "transform": [
-      [
-        "babelify"
-      ]
-    ]
+    "transform": [ [ "babelify" ] ]
   },
   "repository": {
     "type": "git",
