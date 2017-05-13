@@ -1,12 +1,20 @@
 import zlib from 'zlib'
 import TarEs6 from './tarEs6'
 import PackageStream from './packageStream'
+const singleton = Symbol()
 
 export default class DownloadNpm {
   constructor() {
     this._tar = null
     this._unzip = zlib.createUnzip()
     this._unzip.on('error', this._onErrorUnzip.bind(this))
+  }
+
+  static get instance() {
+    if (!this[singleton])
+      this[singleton] = new DownloadNpm()
+
+    return this[singleton]
   }
 
   download(name, path = '/') {
