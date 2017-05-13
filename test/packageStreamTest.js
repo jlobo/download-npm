@@ -4,7 +4,7 @@ const Stream = require('stream')
 const PackageInfo = td.replace('../src/packageInfo').default
 const PackageStream = require('../src/packageStream').default
 
-test('PackageStream should configure the pipe', async assert => {
+test('PackageStream should configure the pipe', assert => {
   const fake = new Stream.Transform()
   td.when(PackageInfo.prototype.getStream()).thenReturn(Promise.resolve(fake))
 
@@ -17,7 +17,7 @@ test('PackageStream should configure the pipe', async assert => {
   })
 })
 
-test('PackageStream should throw an error', async assert => {
+test('PackageStream should throw an error', assert => {
   const err = {}
   td.when(PackageInfo.prototype.getStream()).thenReturn(Promise.reject(err))
 
@@ -30,7 +30,7 @@ test('PackageStream should throw an error', async assert => {
   })
 })
 
-test('PackageStream should pass the data through the pipe', async assert => {
+test('PackageStream should pass the data through the pipe', assert => {
   td.when(PackageInfo.prototype.getStream())
     .thenReturn(Promise.resolve(new Stream.Transform()))
 

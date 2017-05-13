@@ -1,26 +1,25 @@
-import TarEs6 from './tarEs6'
-import got from 'got'
 import zlib from 'zlib'
+import TarEs6 from './tarEs6'
+import PackageStream from './packageStream'
 
 export default class DownloadNpm {
   constructor() {
-    this.tar = null
-    this.unzip = zlib.createUnzip()
-    this.url = 'http://registry.npmjs.org/'
-
-    this.unzip.on('error', this._onErrorUnzip.bind(this))
+    this._tar = null
+    this._unzip = zlib.createUnzip()
+    this._unzip.on('error', this._onErrorUnzip.bind(this))
   }
 
-  async download(name, path = '/') {
-    let res = await got(this.url + name, {json: true})
+  download(name, path = '/') {
+    const stream = new PackageStream(name)
 
-    const latest = res.body['dist-tags'].latest
-    const url = res.body.versions[latest].dist.tarball
-    res = await got.stream(url)
+    this._tar = new TarEs6(path)
+    this._tar.map = this._mapTar.bind(this, name)
 
-    this.tar = new TarEs6(path)
-    this.tar.map = this._mapTar.bind(this, name)
-    res.pipe(this.unzip).pipe(this.tar)
+    stream.pipe(this._unzip).pipe(this._tar)
+    return new Promise((resolve, reject) => {
+      this._tar.on('error', reject)
+      this._tar.on('finish', ()=> resolve())
+    })
   }
 
   _mapTar(name, header) {
@@ -30,8 +29,9 @@ export default class DownloadNpm {
 
   _onErrorUnzip(err) {
     if (err.code !== 'Z_BUF_ERROR')
-      return this.tar.emit('error', err)
+      return this._tar.emit('error', err)
 
-    this.tar.end()
+    console.error('Buffer Error :(')
+    this._tar.end()
   }
 }
