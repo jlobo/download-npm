@@ -1,9 +1,9 @@
 const td = require('testdouble')
 const test = require('tape')
-const win = require('../src/global/window').default
-const FileWriterSync = require('../src/fileWriterSync').default
-const FileReader = td.replace('../src/global/fileReader').default
-const FileSystemSync = require('../src/fileSystemSync').default
+const win = require('../src/packages/global/window').default
+const FileWriterSync = require('../src/packages/fsEs6/fileWriterSync').default
+const FileReader = td.replace('../src/packages/global/fileReader').default
+const FileSystemSync = require('../src/packages/fsEs6/fileSystemSync').default
 const any = td.matchers.anything()
 td.reset()
 

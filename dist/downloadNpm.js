@@ -25870,30 +25870,13 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-require('babel-polyfill');
-
-var _downloadNpm = require('./downloadNpm');
-
-var _downloadNpm2 = _interopRequireDefault(_downloadNpm);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-exports.default = _downloadNpm2.default.instance.download;
-
-},{"./downloadNpm":385,"babel-polyfill":2}],385:[function(require,module,exports){
-'use strict';
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 var _zlib = require('zlib');
 
 var _zlib2 = _interopRequireDefault(_zlib);
 
-var _tarEs = require('./tarEs6');
+var _tarEs = require('./packages/tarEs6');
 
 var _tarEs2 = _interopRequireDefault(_tarEs);
 
@@ -25964,7 +25947,229 @@ var DownloadNpm = function () {
 
 exports.default = DownloadNpm;
 
-},{"./packageStream":393,"./tarEs6":394,"zlib":7}],386:[function(require,module,exports){
+},{"./packageStream":387,"./packages/tarEs6":394,"zlib":7}],385:[function(require,module,exports){
+'use strict';
+
+require('babel-polyfill');
+
+var _downloadNpm = require('./downloadNpm');
+
+var _downloadNpm2 = _interopRequireDefault(_downloadNpm);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+module.exports = _downloadNpm2.default.instance.download.bind(_downloadNpm2.default.instance);
+
+},{"./downloadNpm":384,"babel-polyfill":2}],386:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _got = require('got');
+
+var _got2 = _interopRequireDefault(_got);
+
+var _semver = require('semver');
+
+var _semver2 = _interopRequireDefault(_semver);
+
+var _validateNpmPackageName = require('validate-npm-package-name');
+
+var _validateNpmPackageName2 = _interopRequireDefault(_validateNpmPackageName);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var exp = /^((@[^@\/]+)\/)?([^@\/]+)(@([^@\/]+))?$/;
+
+var PackageInfo = function () {
+  function PackageInfo(info) {
+    _classCallCheck(this, PackageInfo);
+
+    var match = exp.exec(info);
+    if (!info || !match) {
+      this.isValid = false;
+      return this.isValid;
+    }
+
+    this.scope = match[2] || null;
+    this.name = this.scope ? this.scope + '/' + match[3] : match[3];
+    this.isValid = (0, _validateNpmPackageName2.default)(this.name).validForOldPackages;
+    this.version = _semver2.default.valid(match[5], true);
+    this.tag = !this.version ? match[5] || 'latest' : null;
+  }
+
+  _createClass(PackageInfo, [{
+    key: 'getInfo',
+    value: function () {
+      var _ref = _asyncToGenerator(regeneratorRuntime.mark(function _callee() {
+        var res, version;
+        return regeneratorRuntime.wrap(function _callee$(_context) {
+          while (1) {
+            switch (_context.prev = _context.next) {
+              case 0:
+                if (!this._info) {
+                  _context.next = 2;
+                  break;
+                }
+
+                return _context.abrupt('return', this._info);
+
+              case 2:
+                if (this.isValid) {
+                  _context.next = 4;
+                  break;
+                }
+
+                return _context.abrupt('return', this.getError('Invalid package name'));
+
+              case 4:
+                _context.next = 6;
+                return (0, _got2.default)(this.urlPackage, { json: true }).catch(this.getError);
+
+              case 6:
+                res = _context.sent;
+                version = this.version ? this.version : res.body['dist-tags'][this.tag];
+
+                this._info = res.body.versions[version];
+
+                return _context.abrupt('return', this._info || this.getError('The package version does not exist'));
+
+              case 10:
+              case 'end':
+                return _context.stop();
+            }
+          }
+        }, _callee, this);
+      }));
+
+      function getInfo() {
+        return _ref.apply(this, arguments);
+      }
+
+      return getInfo;
+    }()
+  }, {
+    key: 'getStream',
+    value: function () {
+      var _ref2 = _asyncToGenerator(regeneratorRuntime.mark(function _callee2() {
+        var info;
+        return regeneratorRuntime.wrap(function _callee2$(_context2) {
+          while (1) {
+            switch (_context2.prev = _context2.next) {
+              case 0:
+                _context2.next = 2;
+                return this.getInfo();
+
+              case 2:
+                info = _context2.sent;
+                return _context2.abrupt('return', _got2.default.stream(info.dist.tarball));
+
+              case 4:
+              case 'end':
+                return _context2.stop();
+            }
+          }
+        }, _callee2, this);
+      }));
+
+      function getStream() {
+        return _ref2.apply(this, arguments);
+      }
+
+      return getStream;
+    }()
+  }, {
+    key: 'getError',
+    value: function getError(err) {
+      if (typeof err === 'string') return Promise.reject({ message: err });
+
+      if (!err || !err.statusCode) return Promise.reject({ message: 'Unexpected error' });
+
+      switch (err.statusCode) {
+        case 404:
+          err.message = 'The package does not exist';break;
+        default:
+          err.message = 'Unexpected error';break;
+      }
+
+      return Promise.reject(err);
+    }
+  }, {
+    key: 'urlPackage',
+    get: function get() {
+      return ('https://registry.npmjs.org/' + encodeURIComponent(this.name)).toLowerCase();
+    }
+  }]);
+
+  return PackageInfo;
+}();
+
+exports.default = PackageInfo;
+
+},{"got":316,"semver":361,"validate-npm-package-name":381}],387:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _stream = require('stream');
+
+var _stream2 = _interopRequireDefault(_stream);
+
+var _packageInfo = require('./packageInfo');
+
+var _packageInfo2 = _interopRequireDefault(_packageInfo);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var PackageStream = function (_Stream$Transform) {
+  _inherits(PackageStream, _Stream$Transform);
+
+  function PackageStream(name, options) {
+    _classCallCheck(this, PackageStream);
+
+    var _this = _possibleConstructorReturn(this, (PackageStream.__proto__ || Object.getPrototypeOf(PackageStream)).call(this, options));
+
+    _this.info = new _packageInfo2.default(name);
+    _this.info.getStream().then(function (stream) {
+      return stream.pipe(_this);
+    }).catch(function (err) {
+      return _this.emit('error', err);
+    });
+    return _this;
+  }
+
+  _createClass(PackageStream, [{
+    key: '_transform',
+    value: function _transform(chunk, enc, next) {
+      this.push(chunk, enc);
+      next();
+    }
+  }]);
+
+  return PackageStream;
+}(_stream2.default.Transform);
+
+exports.default = PackageStream;
+
+},{"./packageInfo":386,"stream":362}],388:[function(require,module,exports){
 (function (Buffer){
 'use strict';
 
@@ -26050,7 +26255,7 @@ var Es6WriteStream = function (_stream$Writable) {
 exports.default = Es6WriteStream;
 
 }).call(this,require("buffer").Buffer)
-},{"buffer":10,"stream":362}],387:[function(require,module,exports){
+},{"buffer":10,"stream":362}],389:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -26059,11 +26264,11 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _window = require('./global/window');
+var _window = require('../global/window');
 
 var _window2 = _interopRequireDefault(_window);
 
-var _fileReader = require('./global/fileReader');
+var _fileReader = require('../global/fileReader');
 
 var _fileReader2 = _interopRequireDefault(_fileReader);
 
@@ -26257,7 +26462,7 @@ var FileSystemSync = function () {
 
 exports.default = FileSystemSync;
 
-},{"./fileWriterSync":388,"./global/fileReader":390,"./global/window":391}],388:[function(require,module,exports){
+},{"../global/fileReader":392,"../global/window":393,"./fileWriterSync":390}],390:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -26349,7 +26554,7 @@ var fileWriterSync = function () {
 
 exports.default = fileWriterSync;
 
-},{}],389:[function(require,module,exports){
+},{}],391:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -26633,7 +26838,7 @@ var FsEs6 = function () {
 exports.default = new FsEs6();
 var create = exports.create = FsEs6;
 
-},{"./es6WriteStream":386,"./fileSystemSync":387}],390:[function(require,module,exports){
+},{"./es6WriteStream":388,"./fileSystemSync":389}],392:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -26641,7 +26846,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = typeof window !== 'undefined' ? FileReader : function () {};
 
-},{}],391:[function(require,module,exports){
+},{}],393:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -26649,216 +26854,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = typeof window !== 'undefined' ? window : { TEMPORARY: 0, PERSISTENT: 1, requestFileSystem: function requestFileSystem() {} };
 
-},{}],392:[function(require,module,exports){
-'use strict';
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _got = require('got');
-
-var _got2 = _interopRequireDefault(_got);
-
-var _semver = require('semver');
-
-var _semver2 = _interopRequireDefault(_semver);
-
-var _validateNpmPackageName = require('validate-npm-package-name');
-
-var _validateNpmPackageName2 = _interopRequireDefault(_validateNpmPackageName);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-var exp = /^((@[^@\/]+)\/)?([^@\/]+)(@([^@\/]+))?$/;
-
-var PackageInfo = function () {
-  function PackageInfo(info) {
-    _classCallCheck(this, PackageInfo);
-
-    var match = exp.exec(info);
-    if (!info || !match) {
-      this.isValid = false;
-      return this.isValid;
-    }
-
-    this.scope = match[2] || null;
-    this.name = this.scope ? this.scope + '/' + match[3] : match[3];
-    this.isValid = (0, _validateNpmPackageName2.default)(this.name).validForOldPackages;
-    this.version = _semver2.default.valid(match[5], true);
-    this.tag = !this.version ? match[5] || 'latest' : null;
-  }
-
-  _createClass(PackageInfo, [{
-    key: 'getInfo',
-    value: function () {
-      var _ref = _asyncToGenerator(regeneratorRuntime.mark(function _callee() {
-        var res, version;
-        return regeneratorRuntime.wrap(function _callee$(_context) {
-          while (1) {
-            switch (_context.prev = _context.next) {
-              case 0:
-                if (!this._info) {
-                  _context.next = 2;
-                  break;
-                }
-
-                return _context.abrupt('return', this._info);
-
-              case 2:
-                if (this.isValid) {
-                  _context.next = 4;
-                  break;
-                }
-
-                return _context.abrupt('return', this.getError('Invalid package name'));
-
-              case 4:
-                _context.next = 6;
-                return (0, _got2.default)(this.urlPackage, { json: true }).catch(this.getError);
-
-              case 6:
-                res = _context.sent;
-                version = this.version ? this.version : res.body['dist-tags'][this.tag];
-
-                this._info = res.body.versions[version];
-
-                return _context.abrupt('return', this._info || this.getError('The package version does not exist'));
-
-              case 10:
-              case 'end':
-                return _context.stop();
-            }
-          }
-        }, _callee, this);
-      }));
-
-      function getInfo() {
-        return _ref.apply(this, arguments);
-      }
-
-      return getInfo;
-    }()
-  }, {
-    key: 'getStream',
-    value: function () {
-      var _ref2 = _asyncToGenerator(regeneratorRuntime.mark(function _callee2() {
-        var info;
-        return regeneratorRuntime.wrap(function _callee2$(_context2) {
-          while (1) {
-            switch (_context2.prev = _context2.next) {
-              case 0:
-                _context2.next = 2;
-                return this.getInfo();
-
-              case 2:
-                info = _context2.sent;
-                return _context2.abrupt('return', _got2.default.stream(info.dist.tarball));
-
-              case 4:
-              case 'end':
-                return _context2.stop();
-            }
-          }
-        }, _callee2, this);
-      }));
-
-      function getStream() {
-        return _ref2.apply(this, arguments);
-      }
-
-      return getStream;
-    }()
-  }, {
-    key: 'getError',
-    value: function getError(err) {
-      if (typeof err === 'string') return Promise.reject({ message: err });
-
-      if (!err || !err.statusCode) return Promise.reject({ message: 'Unexpected error' });
-
-      switch (err.statusCode) {
-        case 404:
-          err.message = 'The package does not exist';break;
-        default:
-          err.message = 'Unexpected error';break;
-      }
-
-      return Promise.reject(err);
-    }
-  }, {
-    key: 'urlPackage',
-    get: function get() {
-      return ('https://registry.npmjs.org/' + encodeURIComponent(this.name)).toLowerCase();
-    }
-  }]);
-
-  return PackageInfo;
-}();
-
-exports.default = PackageInfo;
-
-},{"got":316,"semver":361,"validate-npm-package-name":381}],393:[function(require,module,exports){
-'use strict';
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _stream = require('stream');
-
-var _stream2 = _interopRequireDefault(_stream);
-
-var _packageInfo = require('./packageInfo');
-
-var _packageInfo2 = _interopRequireDefault(_packageInfo);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var PackageStream = function (_Stream$Transform) {
-  _inherits(PackageStream, _Stream$Transform);
-
-  function PackageStream(name, options) {
-    _classCallCheck(this, PackageStream);
-
-    var _this = _possibleConstructorReturn(this, (PackageStream.__proto__ || Object.getPrototypeOf(PackageStream)).call(this, options));
-
-    _this.info = new _packageInfo2.default(name);
-    _this.info.getStream().then(function (stream) {
-      return stream.pipe(_this);
-    }).catch(function (err) {
-      return _this.emit('error', err);
-    });
-    return _this;
-  }
-
-  _createClass(PackageStream, [{
-    key: '_transform',
-    value: function _transform(chunk, enc, next) {
-      this.push(chunk, enc);
-      next();
-    }
-  }]);
-
-  return PackageStream;
-}(_stream2.default.Transform);
-
-exports.default = PackageStream;
-
-},{"./packageInfo":392,"stream":362}],394:[function(require,module,exports){
+},{}],394:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -27051,4 +27047,4 @@ var TarEs6 = function (_Stream$Writable) {
 
 exports.default = TarEs6;
 
-},{"fs":389,"path":339,"stream":362,"tar-stream":370}]},{},[384]);
+},{"fs":391,"path":339,"stream":362,"tar-stream":370}]},{},[385]);

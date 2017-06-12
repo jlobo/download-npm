@@ -1,6 +1,6 @@
 import test from 'tape'
 import td from 'testdouble'
-import FileWriterSync from '../src/fileWriterSync'
+import FileWriterSync from '../src/packages/fsEs6/fileWriterSync'
 
 test('FileWriterSync.seek() should change the position', async assert => {
   const writer = td.object(['seek'])
