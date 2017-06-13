@@ -1,5 +1,5 @@
 import FileSystemSync from './fileSystemSync'
-import Es6WriteStream from './es6WriteStream'
+import WriteStreamEs6 from './writeStreamEs6'
 
 class FsEs6 {
   constructor(type, size) {
@@ -154,7 +154,7 @@ class FsEs6 {
     promise.then(file => file.truncate())
       .catch(error => Promise.reject({path, error}))
 
-    return new Es6WriteStream(promise, options)
+    return new WriteStreamEs6(promise, options)
   }
 
   _write(file, data) {
