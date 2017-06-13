@@ -1,5 +1,5 @@
 import zlib from 'zlib'
-import TarEs6 from './tarEs6'
+import TarEs6 from './packages/tarEs6'
 import PackageStream from './packageStream'
 const singleton = Symbol()
 

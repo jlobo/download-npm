@@ -1,5 +1,5 @@
-import window from './global/window'
-import FileReader from './global/fileReader'
+import window from '../global/window'
+import FileReader from '../global/fileReader'
 import FileWriterSync from './fileWriterSync'
 
 export default class FileSystemSync {

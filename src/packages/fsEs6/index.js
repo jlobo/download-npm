@@ -1,5 +1,5 @@
 import FileSystemSync from './fileSystemSync'
-import Es6WriteStream from './es6WriteStream'
+import WriteStreamEs6 from './writeStreamEs6'
 
 class FsEs6 {
   constructor(type, size) {
@@ -87,14 +87,14 @@ class FsEs6 {
 
   rmdir(path, callback) {
     this.fs.getDirectoryEntry(path)
-      .then(directory => directory.remove(callback, callback))
+      .then(directory => directory.removeRecursively(callback, callback))
       .catch(callback)
   }
 
   rmdirSync(path) {
     return new Promise((resolve, reject) => {
       return this.fs.getDirectoryEntry(path)
-        .then(directory => directory.remove(resolve, reject))
+        .then(directory => directory.removeRecursively(resolve, reject))
         .catch(reject)
     })
   }
@@ -152,8 +152,9 @@ class FsEs6 {
   createWriteStream(path, options) {
     const promise = this.fs.getFileWriter(path)
     promise.then(file => file.truncate())
+      .catch(error => Promise.reject({path, error}))
 
-    return new Es6WriteStream(promise, options)
+    return new WriteStreamEs6(promise, options)
   }
 
   _write(file, data) {

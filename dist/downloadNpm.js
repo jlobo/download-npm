@@ -25870,30 +25870,13 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-require('babel-polyfill');
-
-var _downloadNpm = require('./downloadNpm');
-
-var _downloadNpm2 = _interopRequireDefault(_downloadNpm);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-exports.default = _downloadNpm2.default.instance.download;
-
-},{"./downloadNpm":385,"babel-polyfill":2}],385:[function(require,module,exports){
-'use strict';
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 var _zlib = require('zlib');
 
 var _zlib2 = _interopRequireDefault(_zlib);
 
-var _tarEs = require('./tarEs6');
+var _tarEs = require('./packages/tarEs6');
 
 var _tarEs2 = _interopRequireDefault(_tarEs);
 
@@ -25964,8 +25947,20 @@ var DownloadNpm = function () {
 
 exports.default = DownloadNpm;
 
-},{"./packageStream":393,"./tarEs6":394,"zlib":7}],386:[function(require,module,exports){
-(function (Buffer){
+},{"./packageStream":386,"./packages/tarEs6":394,"zlib":7}],385:[function(require,module,exports){
+'use strict';
+
+require('babel-polyfill');
+
+var _downloadNpm = require('./downloadNpm');
+
+var _downloadNpm2 = _interopRequireDefault(_downloadNpm);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+module.exports = _downloadNpm2.default.instance.download.bind(_downloadNpm2.default.instance);
+
+},{"./downloadNpm":384,"babel-polyfill":2}],386:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -25978,9 +25973,11 @@ var _stream = require('stream');
 
 var _stream2 = _interopRequireDefault(_stream);
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+var _packageInfo = require('./packages/packageInfo');
 
-function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
+var _packageInfo2 = _interopRequireDefault(_packageInfo);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -25988,69 +25985,37 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-var Es6WriteStream = function (_stream$Writable) {
-  _inherits(Es6WriteStream, _stream$Writable);
+var PackageStream = function (_Stream$Transform) {
+  _inherits(PackageStream, _Stream$Transform);
 
-  function Es6WriteStream(writer, options) {
-    _classCallCheck(this, Es6WriteStream);
+  function PackageStream(name, options) {
+    _classCallCheck(this, PackageStream);
 
-    var _this = _possibleConstructorReturn(this, (Es6WriteStream.__proto__ || Object.getPrototypeOf(Es6WriteStream)).call(this, options));
+    var _this = _possibleConstructorReturn(this, (PackageStream.__proto__ || Object.getPrototypeOf(PackageStream)).call(this, options));
 
-    _this.writer = writer;
+    _this.info = new _packageInfo2.default(name);
+    _this.info.getStream().then(function (stream) {
+      return stream.pipe(_this);
+    }).catch(function (err) {
+      return _this.emit('error', err);
+    });
     return _this;
   }
 
-  _createClass(Es6WriteStream, [{
-    key: '_write',
-    value: function () {
-      var _ref = _asyncToGenerator(regeneratorRuntime.mark(function _callee(chunk, enc, next) {
-        var file;
-        return regeneratorRuntime.wrap(function _callee$(_context) {
-          while (1) {
-            switch (_context.prev = _context.next) {
-              case 0:
-                _context.next = 2;
-                return this.writer;
-
-              case 2:
-                file = _context.sent;
-                _context.next = 5;
-                return file.write(this._createBlob(chunk));
-
-              case 5:
-                next();
-
-              case 6:
-              case 'end':
-                return _context.stop();
-            }
-          }
-        }, _callee, this);
-      }));
-
-      function _write(_x, _x2, _x3) {
-        return _ref.apply(this, arguments);
-      }
-
-      return _write;
-    }()
-  }, {
-    key: '_createBlob',
-    value: function _createBlob(buffer) {
-      var buf = new Buffer(buffer.byteLength);
-      for (var i = 0; i < buf.length; ++i) {
-        buf[i] = buffer[i];
-      }return new Blob([buf]);
+  _createClass(PackageStream, [{
+    key: '_transform',
+    value: function _transform(chunk, enc, next) {
+      this.push(chunk, enc);
+      next();
     }
   }]);
 
-  return Es6WriteStream;
-}(_stream2.default.Writable);
+  return PackageStream;
+}(_stream2.default.Transform);
 
-exports.default = Es6WriteStream;
+exports.default = PackageStream;
 
-}).call(this,require("buffer").Buffer)
-},{"buffer":10,"stream":362}],387:[function(require,module,exports){
+},{"./packages/packageInfo":393,"stream":362}],387:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -26059,11 +26024,11 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _window = require('./global/window');
+var _window = require('../global/window');
 
 var _window2 = _interopRequireDefault(_window);
 
-var _fileReader = require('./global/fileReader');
+var _fileReader = require('../global/fileReader');
 
 var _fileReader2 = _interopRequireDefault(_fileReader);
 
@@ -26257,7 +26222,7 @@ var FileSystemSync = function () {
 
 exports.default = FileSystemSync;
 
-},{"./fileWriterSync":388,"./global/fileReader":390,"./global/window":391}],388:[function(require,module,exports){
+},{"../global/fileReader":391,"../global/window":392,"./fileWriterSync":388}],388:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -26363,9 +26328,9 @@ var _fileSystemSync = require('./fileSystemSync');
 
 var _fileSystemSync2 = _interopRequireDefault(_fileSystemSync);
 
-var _es6WriteStream = require('./es6WriteStream');
+var _writeStreamEs = require('./writeStreamEs6');
 
-var _es6WriteStream2 = _interopRequireDefault(_es6WriteStream);
+var _writeStreamEs2 = _interopRequireDefault(_writeStreamEs);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -26597,7 +26562,7 @@ var FsEs6 = function () {
         return Promise.reject({ path: path, error: error });
       });
 
-      return new _es6WriteStream2.default(promise, options);
+      return new _writeStreamEs2.default(promise, options);
     }
   }, {
     key: '_write',
@@ -26633,7 +26598,93 @@ var FsEs6 = function () {
 exports.default = new FsEs6();
 var create = exports.create = FsEs6;
 
-},{"./es6WriteStream":386,"./fileSystemSync":387}],390:[function(require,module,exports){
+},{"./fileSystemSync":387,"./writeStreamEs6":390}],390:[function(require,module,exports){
+(function (Buffer){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _stream = require('stream');
+
+var _stream2 = _interopRequireDefault(_stream);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var WriteStreamEs6 = function (_stream$Writable) {
+  _inherits(WriteStreamEs6, _stream$Writable);
+
+  function WriteStreamEs6(writer, options) {
+    _classCallCheck(this, WriteStreamEs6);
+
+    var _this = _possibleConstructorReturn(this, (WriteStreamEs6.__proto__ || Object.getPrototypeOf(WriteStreamEs6)).call(this, options));
+
+    _this.writer = writer;
+    return _this;
+  }
+
+  _createClass(WriteStreamEs6, [{
+    key: '_write',
+    value: function () {
+      var _ref = _asyncToGenerator(regeneratorRuntime.mark(function _callee(chunk, enc, next) {
+        var file;
+        return regeneratorRuntime.wrap(function _callee$(_context) {
+          while (1) {
+            switch (_context.prev = _context.next) {
+              case 0:
+                _context.next = 2;
+                return this.writer;
+
+              case 2:
+                file = _context.sent;
+                _context.next = 5;
+                return file.write(this._createBlob(chunk));
+
+              case 5:
+                next();
+
+              case 6:
+              case 'end':
+                return _context.stop();
+            }
+          }
+        }, _callee, this);
+      }));
+
+      function _write(_x, _x2, _x3) {
+        return _ref.apply(this, arguments);
+      }
+
+      return _write;
+    }()
+  }, {
+    key: '_createBlob',
+    value: function _createBlob(buffer) {
+      var buf = new Buffer(buffer.byteLength);
+      for (var i = 0; i < buf.length; ++i) {
+        buf[i] = buffer[i];
+      }return new Blob([buf]);
+    }
+  }]);
+
+  return WriteStreamEs6;
+}(_stream2.default.Writable);
+
+exports.default = WriteStreamEs6;
+
+}).call(this,require("buffer").Buffer)
+},{"buffer":10,"stream":362}],391:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -26641,7 +26692,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = typeof window !== 'undefined' ? FileReader : function () {};
 
-},{}],391:[function(require,module,exports){
+},{}],392:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -26649,7 +26700,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = typeof window !== 'undefined' ? window : { TEMPORARY: 0, PERSISTENT: 1, requestFileSystem: function requestFileSystem() {} };
 
-},{}],392:[function(require,module,exports){
+},{}],393:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -26803,62 +26854,7 @@ var PackageInfo = function () {
 
 exports.default = PackageInfo;
 
-},{"got":316,"semver":361,"validate-npm-package-name":381}],393:[function(require,module,exports){
-'use strict';
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _stream = require('stream');
-
-var _stream2 = _interopRequireDefault(_stream);
-
-var _packageInfo = require('./packageInfo');
-
-var _packageInfo2 = _interopRequireDefault(_packageInfo);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var PackageStream = function (_Stream$Transform) {
-  _inherits(PackageStream, _Stream$Transform);
-
-  function PackageStream(name, options) {
-    _classCallCheck(this, PackageStream);
-
-    var _this = _possibleConstructorReturn(this, (PackageStream.__proto__ || Object.getPrototypeOf(PackageStream)).call(this, options));
-
-    _this.info = new _packageInfo2.default(name);
-    _this.info.getStream().then(function (stream) {
-      return stream.pipe(_this);
-    }).catch(function (err) {
-      return _this.emit('error', err);
-    });
-    return _this;
-  }
-
-  _createClass(PackageStream, [{
-    key: '_transform',
-    value: function _transform(chunk, enc, next) {
-      this.push(chunk, enc);
-      next();
-    }
-  }]);
-
-  return PackageStream;
-}(_stream2.default.Transform);
-
-exports.default = PackageStream;
-
-},{"./packageInfo":392,"stream":362}],394:[function(require,module,exports){
+},{"got":316,"semver":361,"validate-npm-package-name":381}],394:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -27051,4 +27047,4 @@ var TarEs6 = function (_Stream$Writable) {
 
 exports.default = TarEs6;
 
-},{"fs":389,"path":339,"stream":362,"tar-stream":370}]},{},[384]);
+},{"fs":389,"path":339,"stream":362,"tar-stream":370}]},{},[385]);

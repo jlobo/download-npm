@@ -1,6 +1,6 @@
 import stream from 'stream'
 
-export default class Es6WriteStream extends stream.Writable {
+export default class WriteStreamEs6 extends stream.Writable {
   constructor(writer, options) {
     super(options)
 

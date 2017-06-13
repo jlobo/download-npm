@@ -1,6 +1,6 @@
 import test from 'tape'
 import td from 'testdouble'
-import FileWriterSync from '../src/fileWriterSync'
+import FileWriterSync from '../src/packages/fsEs6/fileWriterSync'
 
 test('FileWriterSync.seek() should change the position', async assert => {
   const writer = td.object(['seek'])
@@ -12,7 +12,7 @@ test('FileWriterSync.seek() should change the position', async assert => {
   assert.end()
 })
 
-test('FileWriterSync.write() should apply the content', async assert => {
+test('FileWriterSync.write() should apply the content', {timeout: 1100}, async assert => {
   const data = ['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten']
   const writer = td.object(['write'])
 
@@ -28,7 +28,7 @@ test('FileWriterSync.write() should apply the content', async assert => {
   assert.end()
 })
 
-test('FileWriterSync.truncate() should remove the length', async assert => {
+test('FileWriterSync.truncate() should remove the length', {timeout: 1100}, async assert => {
   const data = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
   const writer = td.object(['truncate'])
 

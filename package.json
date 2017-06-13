@@ -2,12 +2,12 @@
   "name": "download-npm",
   "version": "1.0.0-rc1",
   "description": "Download the modules from the NPM registry to HTML5 file system API Edit",
-  "main": "build/server.js",
+  "main": "build/index.js",
   "scripts": {
     "start": "budo src/client.js --live",
     "build": "npm run build:client && npm run build:node",
     "build:node": "rm -rf build && mkdir -p build && babel src --out-dir build",
-    "build:client": "rm -rf dist && mkdir -p dist && browserify src/client.js -o dist/downloadNpm.js",
+    "build:client": "rm -rf dist && mkdir -p dist && browserify src/index.js -o dist/downloadNpm.js",
     "test": "tape-watch -c -r babel-polyfill -r babel-register 'test/**/*.js' -p faucet"
   },
   "dependencies": {
@@ -33,7 +33,7 @@
     "testdouble": "^2.1.2"
   },
   "browser": {
-    "fs": "./src/fsEs6"
+    "fs": "./src/packages/fsEs6"
   },
   "browserify": {
     "transform": [ [ "babelify" ] ]

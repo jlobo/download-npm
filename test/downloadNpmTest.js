@@ -2,7 +2,7 @@ const td = require('testdouble')
 const test = require('tape')
 const Stream = require('stream')
 const zlib = td.replace('zlib')
-const TarEs6 = td.replace('../src/tarEs6', td.constructor(Stream.Transform))
+const TarEs6 = td.replace('../src/packages/tarEs6', td.constructor(Stream.Writable))
 const packageStream = td.replace('../src/packageStream', td.constructor(Stream.Transform))
 const DownloadNpm = require('../src/downloadNpm').default
 const any = td.matchers.anything()
@@ -23,7 +23,7 @@ test('DownloadNpm.constructor() should configure the object', assert => {
   assert.end()
 })
 
-test('DownloadNpm.download() should obtain the package', async assert => {
+test('DownloadNpm.download() should obtain the package', {timeout: 100}, async assert => {
   const Unzip = td.constructor(Stream.Transform)
   const zip = new Unzip()
   td.when(zlib.createUnzip()).thenReturn(zip)

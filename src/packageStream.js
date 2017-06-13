@@ -1,5 +1,5 @@
 import Stream from 'stream'
-import PackageInfo from './packageInfo'
+import PackageInfo from './packages/packageInfo'
 
 export default class PackageStream extends Stream.Transform {
   constructor(name, options) {
