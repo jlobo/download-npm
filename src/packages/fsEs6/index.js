@@ -1,9 +1,14 @@
+import 'babel-polyfill'
 import FileSystemSync from './fileSystemSync'
 import WriteStreamEs6 from './writeStreamEs6'
 
 class FsEs6 {
   constructor(type, size) {
     this.fs = new FileSystemSync(type, size)
+  }
+
+  static create(type, size) {
+    return new FsEs6(type, size)
   }
 
   writeFile(file, data, callback) {
@@ -185,5 +190,4 @@ class FsEs6 {
   }
 }
 
-export default new FsEs6()
-export const create = FsEs6
+module.exports = new FsEs6()

@@ -1,6 +1,6 @@
 {
   "name": "download-npm",
-  "version": "1.0.0-rc1",
+  "version": "1.0.0-rc2",
   "description": "Download the modules from the NPM registry to HTML5 file system API Edit",
   "main": "build/index.js",
   "scripts": {
