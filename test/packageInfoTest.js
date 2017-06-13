@@ -1,7 +1,7 @@
 const test = require('tape')
 const td = require('testdouble')
 const got = td.replace('got')
-const PackageInfo = require('../src/packageInfo').default
+const PackageInfo = require('../src/packages/packageInfo').default
 const any = td.matchers.anything()
 td.reset()
 

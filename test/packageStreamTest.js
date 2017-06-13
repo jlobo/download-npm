@@ -1,7 +1,7 @@
 const td = require('testdouble')
 const test = require('tape')
 const Stream = require('stream')
-const PackageInfo = td.replace('../src/packageInfo').default
+const PackageInfo = td.replace('../src/packages/packageInfo').default
 const PackageStream = require('../src/packageStream').default
 td.reset()
 
